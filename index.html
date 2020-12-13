@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji-Video</title>
+    <style>
+        body {
+            width: 100%;
+        }
+        @media only screen 
+        and (max-device-width: 768px) 
+        and (-webkit-min-device-pixel-ratio: 2){
+            #mirrow {
+                font-size: 5px;
+                line-height: 6px;
+            }
+        }
+        @media only screen and (min-device-width: 768px) {
+            #mirrow {
+                font-size: 0.8em;
+                line-height: 1.1em;
+            }
+        }
+        div {
+            padding: 0; 
+            width: 100%;
+            overflow-x: scroll;
+            letter-spacing: -0.2em;
+            display: inline-block;
+        }
+        span {
+            display: inline-block;
+        }
+        canvas {
+            display: none;
+        }    
+    </style>
+    <script src="js/p5.min.js"></script>
+    <script src="js/p5.sound.js"></script>
+    <script>
+var video;
+var vScale = 10;
+var slider, label;
+var cols, rows;
+var boxes =[];
+
+function setup() {
+    // createCanvas(640, 480);
+    if (deviceOrientation == "portrait") {
+        cols = 48;
+        rows = 64;
+    } else {
+        cols = 64;
+        rows = 48;
+    }
+    pixelDensity(1);
+    video = createCapture(VIDEO);
+    video.size(cols, rows);
+    label = createElement('lable', "Threshold: ");
+    label.attribute('for', 'threshold');
+    slider = createSlider(0, 255, 127);
+    slider.id('threshold');
+
+    for (var y = 0; y < rows; y++) {
+        var line = createDiv();
+        line.id(String(y));
+        line.addClass('row');
+        line.parent('mirrow');
+        for (var x = 0; x < cols; x++) {
+            var box = createSpan('💀');
+            box.parent(String(y));
+            boxes.push(box);
+        }
+    }
+}
+
+function draw() {
+    background(0);
+    video.loadPixels();
+    for (var y = 0; y < video.height; y++) {
+        for (var x = 0; x < video.width; x++) {
+            var index = (video.width - x -1 + y * video.width)*4;
+            var r = video.pixels[index+0];
+            var g = video.pixels[index+1];
+            var b = video.pixels[index+2];
+            
+            var bright =(r+g+b)/3;
+            var threshold = slider.value();
+            
+            var spanIndex = x + y*cols;
+            if (bright > threshold) {
+                fill(255);
+                boxes[spanIndex].html('💀');
+            } else {
+                fill(0);
+                boxes[spanIndex].html('💩'); 
+            }
+        }
+    }
+    label.html("Threshold: " + threshold);    
+}
+    </script>
+  </head>
+  <body>
+      <div id="mirrow"></div>
+  </body>
+</html>
